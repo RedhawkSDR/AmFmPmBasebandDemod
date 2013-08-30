@@ -33,7 +33,7 @@ AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i(const char *uuid, const char *label
     AmFmPmBasebandDemod_base(uuid, label),
     listener(*this, &AmFmPmBasebandDemod_i::callBackFunc)
 {
-	debugOut("AmFmPmBasebandDemod_i::BasebandDemod_i() constructor entry");
+	debugOut("AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() constructor entry");
     demodInput.resize(BUFFER_LENGTH, Complex(0.0,0.0));
     fmOutput.resize(BUFFER_LENGTH, Real(0.0));
     pmOutput.resize(BUFFER_LENGTH, Real(0.0));
@@ -148,7 +148,7 @@ int AmFmPmBasebandDemod_i::serviceFunction()
 
 
     if (debug)
-    	std::cout<<"AmFmPmBasebandDemod_i::BasebandDemod_i() service function "<<pkt->dataBuffer.size()<<"\n";
+    	std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() service function "<<pkt->dataBuffer.size()<<"\n";
     BULKIO::PrecisionUTCTime T = pkt->T;
     bool EOS = pkt->EOS;
     std::string streamID = pkt->streamID;
@@ -173,7 +173,7 @@ int AmFmPmBasebandDemod_i::serviceFunction()
     				outputBuffer.push_back(amOutput[j]);
     			}
     			if(debug)
-    				std::cout<<"AmFmPmBasebandDemod_i::BasebandDemod_i() pushing AM" <<outputBuffer.size()<<std::endl;
+    				std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() pushing AM" <<outputBuffer.size()<<std::endl;
     			am_dataFloat_out->pushPacket(outputBuffer, T, EOS, streamID);
     			outputBuffer.clear();
     		}
@@ -185,7 +185,7 @@ int AmFmPmBasebandDemod_i::serviceFunction()
 					outputBuffer.push_back(fmOutput[j]);
 				}
 				if(debug)
-					std::cout<<"AmFmPmBasebandDemod_i::BasebandDemod_i() pushing FM" <<outputBuffer.size()<<std::endl;
+					std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() pushing FM" <<outputBuffer.size()<<std::endl;
 				fm_dataFloat_out->pushPacket(outputBuffer, T, EOS, streamID);
 				outputBuffer.clear();
     		}
@@ -197,7 +197,7 @@ int AmFmPmBasebandDemod_i::serviceFunction()
 					outputBuffer.push_back(pmOutput[j]);
 				}
 				if(debug)
-					std::cout<<"AmFmPmBasebandDemod_i::BasebandDemod_i() pushing PM" <<outputBuffer.size()<<std::endl;
+					std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() pushing PM" <<outputBuffer.size()<<std::endl;
 				pm_dataFloat_out->pushPacket(outputBuffer, T, EOS, streamID);
 				outputBuffer.clear();
     		}
@@ -205,14 +205,14 @@ int AmFmPmBasebandDemod_i::serviceFunction()
     }
 	delete pkt; //must delete the dataTransfer object when no longer needed
 	if (debug)
-		std::cout<<"AmFmPmBasebandDemod_i::BasebandDemod_i() service function done "<<inputIndex<<"\n";
+		std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() service function done "<<inputIndex<<"\n";
 	return NORMAL;
 }
 
 void AmFmPmBasebandDemod_i::configureSRI(BULKIO::StreamSRI &sri)
 {
 	if (debug)
-		std::cout<<"BaseBandDemmod::configureSRI() entry\n\tsri.xdelta = "<<sri.xdelta<<"\n"<<"\tstri.streamID = "<<sri.streamID<<"\n";
+		std::cout<<"AmFmPmBasebandDemod_i::configureSRI() entry\n\tsri.xdelta = "<<sri.xdelta<<"\n"<<"\tstri.streamID = "<<sri.streamID<<"\n";
 	if (sri.mode!=1)
 		debugOut("WARNING --  mode is not 1 -- treating real data as if complex");
 	float tmpSampleRate = 1.0/sri.xdelta;
