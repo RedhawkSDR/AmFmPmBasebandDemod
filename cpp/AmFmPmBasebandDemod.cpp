@@ -237,10 +237,10 @@ void AmFmPmBasebandDemod_i::remakeDemod()
 		freqGain = sampleRate;
 	else
 		freqGain=freqDeviation;
-	float inialPhase = 0;
+	float initialPhase = 0;
 	if(demod!=NULL)
 	{
-		inialPhase = demod->getPhase();
+		initialPhase = demod->getPhase();
 		delete demod;
 	}
 	RealArray* amBuf =& amOutput;
@@ -257,7 +257,7 @@ void AmFmPmBasebandDemod_i::remakeDemod()
 		fmBuf=NULL;
 	if (debug)
 		std::cout<<"AmFmPmBasebandDemod::remakeDemod() entry\nsampleRate = "<<sampleRate <<"\n"<<"freqGain = "<<freqGain<<"\n"<<"phaseDeviation = "<<phaseDeviation<<" doingAM = "<<doingAM<<" doingPM = "<<doingPM<<" doingFM = "<<doingFM<<"\n";
-	demod = new AmFmPmBasebandDemod(demodInput, amBuf, pmBuf, fmBuf, freqGain, phaseDeviation,inialPhase);
+	demod = new AmFmPmBasebandDemod(demodInput, amBuf, pmBuf, fmBuf, freqGain, phaseDeviation,initialPhase);
 	DemodParamsChanged = false;
 }
 
