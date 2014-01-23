@@ -203,6 +203,13 @@ int AmFmPmBasebandDemod_i::serviceFunction()
     		}
     	}
     }
+
+	if (EOS) {
+		debugOut(std::string("serviceFunction() - Received EOS for stream: '") + pkt->streamID + "'");
+		this->streamID = ""; // Reset streamID on EOS to allow processing of new stream
+		DemodParamsChanged = true; // Ensure demod is remade on next received packet
+	}
+
 	delete pkt; //must delete the dataTransfer object when no longer needed
 	if (debug)
 		std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() service function done "<<inputIndex<<"\n";
