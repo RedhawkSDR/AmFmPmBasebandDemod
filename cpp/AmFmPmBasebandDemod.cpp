@@ -131,14 +131,19 @@ int AmFmPmBasebandDemod_i::serviceFunction()
     	fm_dataFloat_out->pushSRI(pkt->SRI);
     	pm_dataFloat_out->pushSRI(pkt->SRI);
     }
+    if(pkt->inputQueueFlushed && debug)
+    {
+    	debugOut("ERROR @ serviceFunction() - Input queue is flushing.");
+    	DemodParamsChanged=true;
+    	LOG_WARN(AmFmPmBasebandDemod_i, "Input queue is flushing");
+    }
+
 	if (DemodParamsChanged){
         if (debug)
         	std::cout<< "@ AmFmPmBasebandDemod_i:serviceFunction() - DemodParamsChanged = "<<DemodParamsChanged<<".\n";
     	remakeDemod();
     }
 
-    if(pkt->inputQueueFlushed && debug)
-    	debugOut("ERROR @ serviceFunction() - Input queue is flushing.");
     if (demod==NULL){
     	debugOut("WARNING @ serviceFunction - demod is not configured");
     	std::cout<<"::serviceFunction - demod is not configured\n";
