@@ -68,6 +68,7 @@ void AmFmPmBasebandDemod_base::start() throw (CORBA::SystemException, CF::Resour
 {
     boost::mutex::scoped_lock lock(serviceThreadLock);
     if (serviceThread == 0) {
+        dataFloat_In->unblock();
         serviceThread = new ProcessThread<AmFmPmBasebandDemod_base>(this, 0.1);
         serviceThread->start();
     }
@@ -82,7 +83,7 @@ void AmFmPmBasebandDemod_base::stop() throw (CORBA::SystemException, CF::Resourc
     boost::mutex::scoped_lock lock(serviceThreadLock);
     // release the child thread (if it exists)
     if (serviceThread != 0) {
-    	dataFloat_In->block();
+        dataFloat_In->block();
         if (!serviceThread->release(2)) {
             throw CF::Resource::StopError(CF::CF_NOTSET, "Processing thread did not die");
         }
@@ -136,6 +137,7 @@ void AmFmPmBasebandDemod_base::releaseObject() throw (CORBA::SystemException, CF
     Resource_impl::releaseObject();
 }
 
+
 void AmFmPmBasebandDemod_base::loadProperties()
 {
     addProperty(freqDeviation,
@@ -175,3 +177,5 @@ void AmFmPmBasebandDemod_base::loadProperties()
                 "configure");
 
 }
+
+

@@ -21,7 +21,7 @@
 #include <boost/thread.hpp>
 #include <ossie/Resource_impl.h>
 
-#include "bulkio/bulkio.h"
+#include <bulkio/bulkio.h>
 
 #define NOOP 0
 #define FINISH -1
@@ -86,6 +86,7 @@ class ProcessThread
 
         void updateDelay(float _delay) { _udelay = (__useconds_t)(_delay * 1000000); };
 
+
     private:
         boost::thread *_mythread;
         bool _thread_running;
@@ -130,8 +131,10 @@ class AmFmPmBasebandDemod_base : public Resource_impl
         bulkio::OutFloatPort *fm_dataFloat_out;
         bulkio::OutFloatPort *am_dataFloat_out;
 
+
     private:
         void construct();
+
 
 };
 #endif
