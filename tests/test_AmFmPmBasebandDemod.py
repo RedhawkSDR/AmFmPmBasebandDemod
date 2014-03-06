@@ -239,13 +239,54 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         #print 
         self.validate(outFM, [10.0*x for x in expected[sampleDelay:sampleDelay+len(outFM)]],.1)
        
+    def testMultiStream(self):
+        """send the same data threw 3 times on 2 streams
+           Verify the output is identical for the two unique streams but 
+           The second push on the same stream is different due to the state of the demod
+        """
+        self.connect(False,False,True)
+        expected = cxmodulation.getFmTest(8400)
+        testInCx = cxmodulation.pmBB(expected)
+        testIn = unpackCx(testInCx)
+        outAM, outFM, outPM_A = self.myTestCase(testIn, 'streamA')
+
+        outAM, outFM, outPM_B = self.myTestCase(testIn, 'streamB')
+        outAM, outFM, outPM_A2 = self.myTestCase(testIn, 'streamA')
+
+        sampleDelay = cxmodulation.getFilterDelay(expected,testInCx)
+        #print 
+        self.validate(outPM_A, [20.0 * x for x in expected[sampleDelay:sampleDelay+len(outPM_A)]],1e-4)
+        self.validate(outPM_A, outPM_B, 1e-5)
+        mse = self.getMSE(outPM_A,outPM_A2)                
+        self.assertTrue(mse>1.0)
+
+    def testEos(self):
+        """send the same data threw 3 times but use Eos to flush the state
+           Verify the output is identical after Eos but 
+           The second push on the same stream is different due to the state of the demod
+        """
+        self.connect(False,False,True)
+        expected = cxmodulation.getFmTest(8400)
+        testInCx = cxmodulation.pmBB(expected)
+        testIn = unpackCx(testInCx)
+        outAM, outFM, outPM_new1 = self.myTestCase(testIn,eos=True)
+
+        outAM, outFM, outPM_new2 = self.myTestCase(testIn)
+        outAM, outFM, outPM_old = self.myTestCase(testIn)
+
+        sampleDelay = cxmodulation.getFilterDelay(expected,testInCx)
+        #print 
+        self.validate(outPM_new1, [20.0 * x for x in expected[sampleDelay:sampleDelay+len(outPM_new1)]],1e-4)
+        self.validate(outPM_new1, outPM_new2, 1e-5)
+        mse = self.getMSE(outPM_new1,outPM_old)                
+        self.assertTrue(mse>1.0)
                 
-    def myTestCase(self, data):
+    def myTestCase(self, data, streamID="test_stream", eos=False):
         """The main engine for all the test cases - configure the equation, push data, and get output
            As applicable
         """
         if data:
-            self.src.push(data)
+            self.src.push(data, EOS = eos, streamID = streamID)
         #data processing is asynchronos - so wait until the data is all processed
         count=0
         outAM = []
@@ -278,12 +319,16 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             count+=1        
         return outAM, outFM, outPM
     def validate(self, output, input,thresh):
+        meanError = self.getMSE(input,output)
+        self.assertTrue(meanError<thresh)
+
+    def getMSE(self, output, input):
         self.assertEqual(len(output),len(input))
         sumError = sum([abs(x-y) for x, y in zip(output,input)])
         meanError = sumError/ len(output)
+        return meanError
         #print [(x, y) for x, y in zip(output,input[:10])]
-        print "meanError = %s" %meanError
-        self.assertTrue(meanError<thresh)
+
                 
             
         

@@ -26,58 +26,81 @@
 
 class AmFmPmBasebandDemod_i;
 
+class AmFmPmProcessor
+{
+public:
+	AmFmPmProcessor();
+	~AmFmPmProcessor();
+	void setup(AmFmPmBasebandDemod_i* component, double freqDeviation, double phaseDeviation, RealArray* fmOutput, RealArray* pmOutput, RealArray* amOutput);
+	void updateSampleRate(double fs);
+	void process (std::vector<float>& input);
+
+private:
+	void newDemod();
+	//demod class which does the work
+	size_t inputIndex;
+	AmFmPmBasebandDemod* demod;
+	ComplexArray demodInput;
+	RealArray* amBuf;
+	RealArray* pmBuf;
+	RealArray* fmBuf;
+	AmFmPmBasebandDemod_i* parent;
+	double sampleRate;
+	double freqDev;
+	double phaseDev;
+
+};
+
+
 class AmFmPmBasebandDemod_i : public AmFmPmBasebandDemod_base
 {
 	//AmFmPmBasebandDemod_i is the implementation for a complex baseband demodulator component
 	//This component wraps the AmFmPmBasebandDemod from the dsp library
 	//to perform am, pm, and fm demdulation of complex baseband input signals
-    ENABLE_LOGGING
-    public:
-        AmFmPmBasebandDemod_i(const char *uuid, const char *label);
-        ~AmFmPmBasebandDemod_i();
-        int serviceFunction();
+	ENABLE_LOGGING
+public:
+	AmFmPmBasebandDemod_i(const char *uuid, const char *label);
+	int serviceFunction();
 
-        //redefine the base class' configure function
-        void configure(const CF::Properties &props) throw (CORBA::SystemException, CF::PropertySet::InvalidConfiguration, CF::PropertySet::PartialConfiguration);
+	//redefine the base class' configure function
+	void configure(const CF::Properties &props) throw (CORBA::SystemException, CF::PropertySet::InvalidConfiguration, CF::PropertySet::PartialConfiguration);
+	void doOutput();
 
-    private:
-        //handle changes to sri
-        void configureSRI(BULKIO::StreamSRI &sri);
-        //Hanlde the remaking of the FM object
-        void remakeDemod();
-        //quick method to help us write debug
-        void debugOut(std::string s);
+private:
+	//Hanlde the remaking of the FM object
+	void remakeDemods();
+	void remakeDemod(AmFmPmProcessor* processor);
+	//quick method to help us write debug
+	void debugOut(std::string s);
 
-        //lock for the demod
-        boost::mutex demodLock;
+	typedef std::map<std::string, AmFmPmProcessor> map_type;
+	map_type demods;
 
-        //demod class which does the work
-        AmFmPmBasebandDemod* demod;
-        //input array
-        ComplexArray demodInput;
-        //output array
-        RealArray fmOutput;
-        RealArray pmOutput;
-        RealArray amOutput;
-        //keep track which modes are used
-        bool doingAM;
-        bool doingFM;
-        bool doingPM;
+	//lock for the demod
+	boost::mutex demodLock;
 
-        //output buffer
-        std::vector<float> outputBuffer;
+	//current packet we are working on
+	bulkio::InFloatPort::dataTransfer *pkt;
 
-        //some internal variables
-        float sampleRate;
-        double squelchThreshold;
-        //flag to help us remake our demod when parameters change
-        bool DemodParamsChanged;
-        size_t inputIndex; //for loading demodInput asychronousy to input packets
-        std::string streamID;
+	//output array
+	RealArray fmOutput;
+	RealArray pmOutput;
+	RealArray amOutput;
+	//keep track which modes are used
+	RealArray* amBuf;
+	RealArray* pmBuf;
+	RealArray* fmBuf;
 
-        bulkio::MemberConnectionEventListener<AmFmPmBasebandDemod_i> listener;
+	//output buffer
+	std::vector<float> outputBuffer;
 
-        void callBackFunc( const char* connectionId);
+	//some internal variables
+	double squelchThreshold;
+	//flag to help us remake our demod when parameters change
+
+	bulkio::MemberConnectionEventListener<AmFmPmBasebandDemod_i> listener;
+
+	void callBackFunc( const char* connectionId);
 };
 
 #endif
