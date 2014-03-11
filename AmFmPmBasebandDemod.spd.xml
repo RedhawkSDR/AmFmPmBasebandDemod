@@ -22,7 +22,7 @@ program.  If not, see http://www.gnu.org/licenses/.
   <author>
     <name>null</name>
   </author>
-  <description>perform angle demodulation on complex baseband input signals</description>
+  <description>Performs angle demodulation on complex baseband input signals</description>
   <propertyfile type="PRF">
     <localfile name="AmFmPmBasebandDemod.prf.xml"/>
   </propertyfile>
