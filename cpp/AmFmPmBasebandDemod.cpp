@@ -98,7 +98,7 @@ AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i(const char *uuid, const char *label
     		fmBuf(NULL),
     		listener(*this, &AmFmPmBasebandDemod_i::callBackFunc)
 {
-	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() constructor entry");
+	LOG_TRACE(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() constructor entry");
 	outputBuffer.reserve(BUFFER_LENGTH);
 	//initialize processing classes and private variables
 	squelchThreshold = 0;
@@ -116,7 +116,7 @@ AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i(const char *uuid, const char *label
 
 void AmFmPmBasebandDemod_i::configure(const CF::Properties & props) throw (CORBA::SystemException, CF::PropertySet::InvalidConfiguration, CF::PropertySet::PartialConfiguration)
 		{
-	LOG_DEBUG(AmFmPmBasebandDemod_i, "configure() entry");
+	LOG_TRACE(AmFmPmBasebandDemod_i, "configure() entry");
 	AmFmPmBasebandDemod_base::configure(props);
 	for (CORBA::ULong i=0; i < props.length(); ++i) {
 		const std::string id = (const char*) props[i].id;
