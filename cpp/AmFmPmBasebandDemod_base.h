@@ -122,7 +122,6 @@ class AmFmPmBasebandDemod_base : public Resource_impl
         double freqDeviation;
         double squelch;
         double phaseDeviation;
-        bool debug;
 
         // Ports
         bulkio::InFloatPort *dataFloat_In;

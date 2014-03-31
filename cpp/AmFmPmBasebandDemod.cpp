@@ -35,6 +35,7 @@ AmFmPmProcessor::AmFmPmProcessor() :
 	demodInput(Complex(0.0,0.0),BUFFER_LENGTH)
 {
 }
+
 AmFmPmProcessor::~AmFmPmProcessor()
 {
 	if (demod!=NULL)
@@ -97,7 +98,7 @@ AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i(const char *uuid, const char *label
     		fmBuf(NULL),
     		listener(*this, &AmFmPmBasebandDemod_i::callBackFunc)
 {
-	debugOut("AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() constructor entry");
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() constructor entry");
 	outputBuffer.reserve(BUFFER_LENGTH);
 	//initialize processing classes and private variables
 	squelchThreshold = 0;
@@ -113,49 +114,37 @@ AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i(const char *uuid, const char *label
 
 }
 
-void AmFmPmBasebandDemod_i::debugOut(std::string s)
-{
-	if (debug)
-	{
-		std::cout<<"AmFmPmBasebandDemod_i::"<<s<<std::endl;
-		LOG_DEBUG(AmFmPmBasebandDemod_i, s);
-	}
-}
 void AmFmPmBasebandDemod_i::configure(const CF::Properties & props) throw (CORBA::SystemException, CF::PropertySet::InvalidConfiguration, CF::PropertySet::PartialConfiguration)
 		{
-	debugOut("configure() entry");
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "configure() entry");
 	AmFmPmBasebandDemod_base::configure(props);
-	for (CORBA::ULong i=0; i< props.length(); ++i) {
+	for (CORBA::ULong i=0; i < props.length(); ++i) {
 		const std::string id = (const char*) props[i].id;
 		PropertyInterface* property = getPropertyFromId(id);
-		if (property->id=="squelch") {
+		if (property->id == "squelch") {
 			squelchThreshold = std::pow(10.0,squelch / 10);
 		}
-		else if (property->id=="freqDeviation" || property->id=="phaseDeviation") {
+		else if (property->id == "freqDeviation" || property->id == "phaseDeviation") {
 			remakeDemods();
 		}
 	}
-	if(debug)
-	{
-		std::cout <<"AmFmPmBasebandDemod_i::configure() - freqDeviation    = "<<freqDeviation<<std::endl;
-		std::cout <<"AmFmPmBasebandDemod_i::configure() - phaseDeviation   = "<<phaseDeviation<<std::endl;
-		std::cout <<"AmFmPmBasebandDemod_i::configure() - squelch          = "<<squelch<<std::endl;
-		std::cout <<"AmFmPmBasebandDemod_i::configure() - squelchThreshold = "<<squelchThreshold<<std::endl;
-		std::cout <<"AmFmPmBasebandDemod_i::configure() - debug            = "<<debug<<std::endl;
-	}
-		}
+
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::configure() - freqDeviation    = " << freqDeviation);
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::configure() - phaseDeviation   = " << phaseDeviation);
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::configure() - squelch          = " << squelch);
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::configure() - squelchThreshold = " << squelchThreshold);
+}
 
 
 int AmFmPmBasebandDemod_i::serviceFunction()
 {
-	debugOut("serviceFunction()");
+	LOG_TRACE(AmFmPmBasebandDemod_i, "serviceFunction()");
 	pkt = dataFloat_In->getPacket(0.0);
 	if (pkt==NULL)
 		return NOOP;
 
 	if(pkt->inputQueueFlushed)
 	{
-		debugOut("ERROR @ serviceFunction() - Input queue is flushing.");
 		LOG_WARN(AmFmPmBasebandDemod_i, "Input queue is flushing");
 		demods.clear();
 	}
@@ -164,10 +153,9 @@ int AmFmPmBasebandDemod_i::serviceFunction()
 		boost::mutex::scoped_lock lock(demodLock);
 		map_type::iterator i = demods.find(pkt->streamID);
 		bool updatedSampleRated = false;
-		if (i==demods.end())
+		if (i == demods.end())
 		{
-			if (debug)
-				std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() got a new stream:  "<<pkt->streamID<<" \n";
+			LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() got a new stream:  " << pkt->streamID);
 			updateSRI = true;
 			map_type::value_type processor(pkt->streamID, AmFmPmProcessor());
 			i = demods.insert(demods.end(),processor);
@@ -177,11 +165,13 @@ int AmFmPmBasebandDemod_i::serviceFunction()
 		}
 		//Check if SRI has been changed
 		if (updateSRI) {
-			debugOut("@ serviceFunction() - sriChanges ");
-			if (!updatedSampleRated)
+			LOG_DEBUG(AmFmPmBasebandDemod_i, "@ serviceFunction() - sriChanges ");
+			if (!updatedSampleRated) {
 				i->second.updateSampleRate(1.0/pkt->SRI.xdelta);
-			if (pkt->SRI.mode!=1)
-				debugOut("WARNING --  mode is not 1 -- treating real data as if complex");
+			}
+			if (pkt->SRI.mode != 1) {
+				LOG_DEBUG(AmFmPmBasebandDemod_i, "WARNING --  mode is not 1 -- treating real data as if complex");
+			}
 			//data real even though input was complex
 			pkt->SRI.mode=0;
 			am_dataFloat_out->pushSRI(pkt->SRI);
@@ -192,15 +182,13 @@ int AmFmPmBasebandDemod_i::serviceFunction()
 
 		if (pkt->EOS)
 		{
-			if (debug)
-				std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() got an EOS \n";
+			LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() got an EOS");
 			demods.erase(i);
 		}
 	}
 
 	delete pkt; //must delete the dataTransfer object when no longer needed
-	if (debug)
-		std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() service function done \n";
+	LOG_TRACE(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() service function done");
 	return NORMAL;
 }
 
@@ -214,8 +202,7 @@ void AmFmPmBasebandDemod_i::doOutput()
 				amOutput[j]=0.0;
 			outputBuffer.push_back(amOutput[j]);
 		}
-		if(debug)
-			std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() pushing AM" <<outputBuffer.size()<<std::endl;
+		LOG_TRACE(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() pushing AM"  << outputBuffer.size());
 		am_dataFloat_out->pushPacket(outputBuffer, pkt->T, pkt->EOS, pkt->streamID);
 		outputBuffer.clear();
 	}
@@ -226,8 +213,7 @@ void AmFmPmBasebandDemod_i::doOutput()
 				fmOutput[j]=0.0;
 			outputBuffer.push_back(fmOutput[j]);
 		}
-		if(debug)
-			std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() pushing FM" <<outputBuffer.size()<<std::endl;
+		LOG_TRACE(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() pushing FM" << outputBuffer.size());
 		fm_dataFloat_out->pushPacket(outputBuffer, pkt->T, pkt->EOS, pkt->streamID);
 		outputBuffer.clear();
 	}
@@ -238,8 +224,7 @@ void AmFmPmBasebandDemod_i::doOutput()
 				pmOutput[j]=0.0;
 			outputBuffer.push_back(pmOutput[j]);
 		}
-		if(debug)
-			std::cout<<"AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() pushing PM" <<outputBuffer.size()<<std::endl;
+		LOG_TRACE(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i() pushing PM" << outputBuffer.size());
 		pm_dataFloat_out->pushPacket(outputBuffer, pkt->T, pkt->EOS, pkt->streamID);
 		outputBuffer.clear();
 	}
@@ -254,17 +239,14 @@ void AmFmPmBasebandDemod_i::remakeDemods()
 
 void AmFmPmBasebandDemod_i::remakeDemod(AmFmPmProcessor* processor)
 {
-	if (debug)
-		std::cout<<"AmFmPmBasebandDemod::remakeDemod() entry\n"<<"freqDeviation = "<<freqDeviation<<"\n"<<"phaseDeviation = "<<phaseDeviation<<"\n";
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod::remakeDemod() entry, freqDeviation = " << freqDeviation << ", phaseDeviation = " << phaseDeviation);
 	processor->setup(this, freqDeviation, phaseDeviation, fmBuf, pmBuf, amBuf);
 }
 
 
 void AmFmPmBasebandDemod_i::callBackFunc( const char* connectionId)
 {
-	std::string s("got connection ");
-	s+=connectionId;
-	debugOut(s);
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "got connection " << connectionId);
 	bool newDemod;
 	bool amConnected(am_dataFloat_out->state()!=BULKIO::IDLE);
 	bool pmConnected(pm_dataFloat_out->state()!=BULKIO::IDLE);
@@ -274,8 +256,7 @@ void AmFmPmBasebandDemod_i::callBackFunc( const char* connectionId)
 	bool fmWasConnected(fmBuf != NULL);
 	if (amWasConnected != amConnected)
 	{
-		if (debug)
-			std::cout<<"update am connection "<<std::endl;
+		LOG_DEBUG(AmFmPmBasebandDemod_i, "update am connection ");
 		if (amConnected)
 			amBuf = &amOutput;
 		else
@@ -284,8 +265,7 @@ void AmFmPmBasebandDemod_i::callBackFunc( const char* connectionId)
 	}
 	if (pmWasConnected != pmConnected)
 	{
-		if (debug)
-			std::cout<<"update pm connection "<<std::endl;
+		LOG_DEBUG(AmFmPmBasebandDemod_i, "update pm connection ");
 		if (pmConnected)
 			pmBuf = &pmOutput;
 		else
@@ -294,14 +274,14 @@ void AmFmPmBasebandDemod_i::callBackFunc( const char* connectionId)
 	}
 	if (fmWasConnected != fmConnected)
 	{
-		if (debug)
-			std::cout<<"update fm connection "<<std::endl;
+		LOG_DEBUG(AmFmPmBasebandDemod_i, "update fm connection ");
 		if (fmConnected)
 			fmBuf = &fmOutput;
 		else
 			fmBuf = NULL;
 		newDemod=true;
 	}
-	if (newDemod)
+	if (newDemod) {
 		remakeDemods();
+	}
 }

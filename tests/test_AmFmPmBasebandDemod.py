@@ -69,8 +69,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         self.startComponent()
         props = {'freqDeviation':10.0,
                  'phaseDeviation':20.0, 
-                 'squelch':-2000.0,
-                 'debug':False}
+                 'squelch':-2000.0}
         self.comp.configure(props_from_dict(props))
         self.comp.start()
         self.src.start()
@@ -240,7 +239,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         self.validate(outFM, [10.0*x for x in expected[sampleDelay:sampleDelay+len(outFM)]],.1)
        
     def testMultiStream(self):
-        """send the same data threw 3 times on 2 streams
+        """send the same data through 3 times on 2 streams
            Verify the output is identical for the two unique streams but 
            The second push on the same stream is different due to the state of the demod
         """
@@ -261,7 +260,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         self.assertTrue(mse>1.0)
 
     def testEos(self):
-        """send the same data threw 3 times but use Eos to flush the state
+        """send the same data through 3 times but use Eos to flush the state
            Verify the output is identical after Eos but 
            The second push on the same stream is different due to the state of the demod
         """
