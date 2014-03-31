@@ -167,15 +167,6 @@ void AmFmPmBasebandDemod_base::loadProperties()
                 "external",
                 "configure");
 
-    addProperty(debug,
-                false,
-                "debug",
-                "",
-                "readwrite",
-                "",
-                "external",
-                "configure");
-
 }
 
 
