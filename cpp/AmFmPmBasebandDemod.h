@@ -70,8 +70,6 @@ private:
 	//Hanlde the remaking of the FM object
 	void remakeDemods();
 	void remakeDemod(AmFmPmProcessor* processor);
-	//quick method to help us write debug
-	void debugOut(std::string s);
 
 	typedef std::map<std::string, AmFmPmProcessor> map_type;
 	map_type demods;
