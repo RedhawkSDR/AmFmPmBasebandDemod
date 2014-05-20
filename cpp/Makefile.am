@@ -40,6 +40,6 @@ distclean-local:
 # you wish to manually control these options.
 include $(srcdir)/Makefile.am.ide
 AmFmPmBasebandDemod_SOURCES = $(redhawk_SOURCES_auto)
-AmFmPmBasebandDemod_CXXFLAGS = -Wall $(PROJECTDEPS_CFLAGS) $(BOOST_CPPFLAGS) $(INTERFACEDEPS_CFLAGS) $(redhawk_INCLUDES_auto)
-AmFmPmBasebandDemod_LDADD = $(PROJECTDEPS_LIBS) $(BOOST_LDFLAGS) $(BOOST_THREAD_LIB) $(BOOST_SYSTEM_LIB) $(INTERFACEDEPS_LIBS) $(redhawk_LDADD_auto)
-AmFmPmBasebandDemod_LDFLAGS = -Wall $(redhawk_LDFLAGS_auto)
+AmFmPmBasebandDemod_CXXFLAGS = -Wall $(PROJECTDEPS_CFLAGS) $(BOOST_CPPFLAGS) $(INTERFACEDEPS_CFLAGS)
+AmFmPmBasebandDemod_LDADD = $(PROJECTDEPS_LIBS) $(BOOST_LDFLAGS) $(BOOST_THREAD_LIB) $(BOOST_SYSTEM_LIB) $(INTERFACEDEPS_LIBS)
+AmFmPmBasebandDemod_LDFLAGS = -Wall
