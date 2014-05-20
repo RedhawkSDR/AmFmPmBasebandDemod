@@ -20,7 +20,7 @@ program.  If not, see http://www.gnu.org/licenses/.
 <softpkg id="DCE:57e98f67-8e5b-4e37-9ce2-db35d433056f" name="AmFmPmBasebandDemod" type="sca_compliant">
   <title></title>
   <author>
-    <name>null</name>
+    <name>REDHAWK</name>
   </author>
   <description>Performs angle demodulation on complex baseband input signals</description>
   <propertyfile type="PRF">
@@ -30,7 +30,7 @@ program.  If not, see http://www.gnu.org/licenses/.
     <localfile name="AmFmPmBasebandDemod.scd.xml"/>
   </descriptor>
   <implementation id="cpp">
-    <description>The implementation contains descriptive information about the template for a software component.</description>
+    <description>C++ implementation of the AmFmPmBasebandDemod</description>
     <code type="Executable">
       <localfile name="cpp/AmFmPmBasebandDemod"/>
       <entrypoint>cpp/AmFmPmBasebandDemod</entrypoint>
@@ -41,8 +41,8 @@ program.  If not, see http://www.gnu.org/licenses/.
     <os name="Linux"/>
     <dependency type="runtime_requirements">
       <softpkgref>
-        <localfile name="/components/dsp/dsp.spd.xml"/>
-        <implref refid="firstImplementation"/>
+        <localfile name="/deps/dsp/dsp.spd.xml"/>
+        <implref refid="cpp"/>
       </softpkgref>
     </dependency>
     <processor name="x86"/>
