@@ -63,7 +63,6 @@ public:
 	int serviceFunction();
 
 	//redefine the base class' configure function
-	void configure(const CF::Properties &props) throw (CORBA::SystemException, CF::PropertySet::InvalidConfiguration, CF::PropertySet::PartialConfiguration);
 	void doOutput();
 
 private:
@@ -99,6 +98,11 @@ private:
 	bulkio::MemberConnectionEventListener<AmFmPmBasebandDemod_i> listener;
 
 	void callBackFunc( const char* connectionId);
+
+	// Property change listener callbacks
+	void freqDeviationChanged(const double *oldValue, const double *newValue);
+	void phaseDeviationChanged(const double *oldValue, const double *newValue);
+	void squelchChanged(const double *oldValue, const double *newValue);
 };
 
 #endif

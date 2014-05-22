@@ -111,30 +111,41 @@ AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i(const char *uuid, const char *label
 	fm_dataFloat_out->setNewConnectListener(&listener);
 	fm_dataFloat_out->setNewDisconnectListener(&listener);
 
-
+	addPropertyChangeListener("freqDeviation", this, &AmFmPmBasebandDemod_i::freqDeviationChanged);
+	addPropertyChangeListener("phaseDeviation", this, &AmFmPmBasebandDemod_i::phaseDeviationChanged);
+	addPropertyChangeListener("squelch", this, &AmFmPmBasebandDemod_i::squelchChanged);
 }
 
-void AmFmPmBasebandDemod_i::configure(const CF::Properties & props) throw (CORBA::SystemException, CF::PropertySet::InvalidConfiguration, CF::PropertySet::PartialConfiguration)
-		{
-	LOG_TRACE(AmFmPmBasebandDemod_i, "configure() entry");
-	AmFmPmBasebandDemod_base::configure(props);
-	for (CORBA::ULong i=0; i < props.length(); ++i) {
-		const std::string id = (const char*) props[i].id;
-		PropertyInterface* property = getPropertyFromId(id);
-		if (property->id == "squelch") {
-			squelchThreshold = std::pow(10.0,squelch / 10);
-		}
-		else if (property->id == "freqDeviation" || property->id == "phaseDeviation") {
-			remakeDemods();
-		}
-	}
+void AmFmPmBasebandDemod_i::freqDeviationChanged(const double *oldValue, const double *newValue)
+{
+	LOG_TRACE(AmFmPmBasebandDemod_i, "freqDeviationChanged() entry");
 
-	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::configure() - freqDeviation    = " << freqDeviation);
-	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::configure() - phaseDeviation   = " << phaseDeviation);
-	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::configure() - squelch          = " << squelch);
-	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::configure() - squelchThreshold = " << squelchThreshold);
+	boost::mutex::scoped_lock lock(demodLock);
+	remakeDemods();
+
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::freqDeviationChanged() - freqDeviation    = " << freqDeviation);
 }
 
+void AmFmPmBasebandDemod_i::phaseDeviationChanged(const double *oldValue, const double *newValue)
+{
+	LOG_TRACE(AmFmPmBasebandDemod_i, "phaseDeviationChanged() entry");
+
+	boost::mutex::scoped_lock lock(demodLock);
+	remakeDemods();
+
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::phaseDeviationChanged() - phaseDeviation   = " << phaseDeviation);
+}
+
+void AmFmPmBasebandDemod_i::squelchChanged(const double *oldValue, const double *newValue)
+{
+	LOG_TRACE(AmFmPmBasebandDemod_i, "squelchChanged() entry");
+
+	boost::mutex::scoped_lock lock(demodLock);
+	squelchThreshold = std::pow(10.0, squelch / 10);
+
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::squelchChanged() - squelch          = " << squelch);
+	LOG_DEBUG(AmFmPmBasebandDemod_i, "AmFmPmBasebandDemod_i::squelchChanged() - squelchThreshold = " << squelchThreshold);
+}
 
 int AmFmPmBasebandDemod_i::serviceFunction()
 {
