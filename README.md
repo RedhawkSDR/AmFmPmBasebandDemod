@@ -1,8 +1,8 @@
-# REDHAWK Basic Components
+# REDHAWK Basic Components AmFmPmBasebandDemod
  
 ## Description
 
-Contains the source and build script for the REDHAWK Basic Components.
+Contains the source and build script for the REDHAWK Basic Components AmFmPmBasebandDemod component.
  
 ## REDHAWK Documentation
 
@@ -18,6 +18,6 @@ This work is protected by Copyright. Please refer to the [Copyright File](COPYRI
 
 ## License
 
-REDHAWK Basic Components are licensed under the GNU Lesser General Public License (LGPL).
+REDHAWK Basic Components AmFmPmBasebandDemod is licensed under the GNU Lesser General Public License (LGPL).
 
 
