@@ -57,10 +57,10 @@ void AmFmPmProcessor::newDemod() {
 			phaseDev, inialPhase);
 }
 
-void AmFmPmProcessor::setup(AmFmPmBasebandDemod_i* component, double freqDevaition, double phaseDeviation, RealArray* fmOutput, RealArray* pmOutput, RealArray* amOutput)
+void AmFmPmProcessor::setup(AmFmPmBasebandDemod_i* component, double freqDeviation, double phaseDeviation, RealArray* fmOutput, RealArray* pmOutput, RealArray* amOutput)
 {
 	parent = component;
-	freqDev=freqDevaition;
+	freqDev=freqDeviation;
 	phaseDev = phaseDeviation;
 	amBuf = amOutput;
 	pmBuf = pmOutput;

@@ -166,7 +166,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         #print "got %s baseband samples" %len(testInCx)
         testIn = unpackCx(testInCx)
         #print "sending in %s real samples" %len(testIn)
-        outAM, outFM, outPM = self.myTestCase(testIn)
+        outAM, outFM, outPM = self.myTestCase(testIn, sampleRate = 1e6)
         if outAM:
             print "am", len(outAM)
         if outFM:
@@ -197,7 +197,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         #print "got %s baseband samples" %len(testInCx)
         testIn = unpackCx(testInCx)
         #print "sending in %s real samples" %len(testIn)
-        outAM, outFM, outPM = self.myTestCase(testIn)
+        outAM, outFM, outPM = self.myTestCase(testIn, sampleRate = 5e6)
         if outAM:
             print "am", len(outAM)
         if outFM:
@@ -248,12 +248,11 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         testInCx = cxmodulation.pmBB(expected)
         testIn = unpackCx(testInCx)
         outAM, outFM, outPM_A = self.myTestCase(testIn, 'streamA')
-
         outAM, outFM, outPM_B = self.myTestCase(testIn, 'streamB')
-        outAM, outFM, outPM_A2 = self.myTestCase(testIn, 'streamA')
+        outAM, outFM, outPM_A2 = self.myTestCase(testIn, 'streamA', sampleRate = 1e6)
 
         sampleDelay = cxmodulation.getFilterDelay(expected,testInCx)
-        #print 
+
         self.validate(outPM_A, [20.0 * x for x in expected[sampleDelay:sampleDelay+len(outPM_A)]],1e-4)
         self.validate(outPM_A, outPM_B, 1e-5)
         mse = self.getMSE(outPM_A,outPM_A2)                
@@ -274,23 +273,26 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         outAM, outFM, outPM_old = self.myTestCase(testIn)
 
         sampleDelay = cxmodulation.getFilterDelay(expected,testInCx)
-        #print 
+
         self.validate(outPM_new1, [20.0 * x for x in expected[sampleDelay:sampleDelay+len(outPM_new1)]],1e-4)
         self.validate(outPM_new1, outPM_new2, 1e-5)
         mse = self.getMSE(outPM_new1,outPM_old)                
         self.assertTrue(mse>1.0)
                 
-    def myTestCase(self, data, streamID="test_stream", eos=False):
+    def myTestCase(self, data, streamID="test_stream", eos=False, sampleRate=1.0):
         """The main engine for all the test cases - configure the equation, push data, and get output
            As applicable
         """
         if data:
-            self.src.push(data, EOS = eos, streamID = streamID)
+            self.src.push(data, EOS = eos, streamID = streamID, sampleRate = sampleRate)
         #data processing is asynchronos - so wait until the data is all processed
         count=0
         outAM = []
         outFM = []
         outPM = []
+        amFlag = False
+        fmFlag = False
+        pmFlag = False
         while True:
             try:
                 thisOutAM =  self.sinkAM.getData()
@@ -306,17 +308,49 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
                 thisOutPM = None
             if thisOutAM:
                 outAM.extend(thisOutAM)
+                amFlag = True
             if thisOutFM:
                 outFM.extend(thisOutFM)
+                fmFlag = True
             if thisOutPM:
                 outPM.extend(thisOutPM)
+                pmFlag = True
             if thisOutAM or thisOutFM or thisOutPM:
                 count=0
             if count==25:
                 break
             time.sleep(.01)
-            count+=1        
+            count+=1
+
+        self.validateSRIPushing(streamID = streamID, sampleRate = sampleRate, AM = amFlag, FM = fmFlag, PM = pmFlag)
         return outAM, outFM, outPM
+    
+    def validateSRIPushing(self, streamID='test_stream', sampleRate=1.0, AM = False, FM = False, PM = False):
+        
+        if AM:
+            self.assertEqual(self.sinkAM.sri().streamID, streamID, "Component not pushing streamID properly for AM port")
+            # Account for rounding error
+            calcSR = 1/self.sinkAM.sri().xdelta
+            diffSR = abs(calcSR-sampleRate)
+            tolerance = 1
+            self.assertTrue(diffSR < tolerance, "Component not pushing samplerate properly for AM port")
+            
+        if FM:
+            self.assertEqual(self.sinkFM.sri().streamID, streamID, "Component not pushing streamID properly for FM port")
+            # Account for rounding error
+            calcSR = 1/self.sinkFM.sri().xdelta
+            diffSR = abs(calcSR-sampleRate)
+            tolerance = 1
+            self.assertTrue(diffSR < tolerance, "Component not pushing samplerate properly for FM port")
+            
+        if PM:
+            self.assertEqual(self.sinkPM.sri().streamID, streamID, "Component not pushing streamID properly for PM port")
+            # Account for rounding error
+            calcSR = 1/self.sinkPM.sri().xdelta
+            diffSR = abs(calcSR-sampleRate)
+            tolerance = 1
+            self.assertTrue(diffSR < tolerance, "Component not pushing samplerate properly for PM port")
+        
     def validate(self, output, input,thresh):
         meanError = self.getMSE(input,output)
         self.assertTrue(meanError<thresh)
@@ -329,7 +363,5 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         #print [(x, y) for x, y in zip(output,input[:10])]
 
                 
-            
-        
 if __name__ == "__main__":
     ossie.utils.testing.main("../AmFmPmBasebandDemod.spd.xml") # By default tests all implementations
