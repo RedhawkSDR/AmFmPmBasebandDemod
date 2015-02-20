@@ -34,8 +34,8 @@ AmFmPmBasebandDemod_base::AmFmPmBasebandDemod_base(const char *uuid, const char 
 {
     loadProperties();
 
-    dataFloat_In = new bulkio::InFloatPort("dataFloat_In");
-    addPort("dataFloat_In", dataFloat_In);
+    dataFloat_in = new bulkio::InFloatPort("dataFloat_in");
+    addPort("dataFloat_in", dataFloat_in);
     pm_dataFloat_out = new bulkio::OutFloatPort("pm_dataFloat_out");
     addPort("pm_dataFloat_out", pm_dataFloat_out);
     fm_dataFloat_out = new bulkio::OutFloatPort("fm_dataFloat_out");
@@ -46,8 +46,8 @@ AmFmPmBasebandDemod_base::AmFmPmBasebandDemod_base(const char *uuid, const char 
 
 AmFmPmBasebandDemod_base::~AmFmPmBasebandDemod_base()
 {
-    delete dataFloat_In;
-    dataFloat_In = 0;
+    delete dataFloat_in;
+    dataFloat_in = 0;
     delete pm_dataFloat_out;
     pm_dataFloat_out = 0;
     delete fm_dataFloat_out;

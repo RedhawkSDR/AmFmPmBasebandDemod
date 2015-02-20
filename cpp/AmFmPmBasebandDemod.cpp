@@ -102,7 +102,7 @@ AmFmPmBasebandDemod_i::AmFmPmBasebandDemod_i(const char *uuid, const char *label
 	outputBuffer.reserve(BUFFER_LENGTH);
 	//initialize processing classes and private variables
 	squelchThreshold = 0;
-	dataFloat_In->setMaxQueueDepth(1000);
+	dataFloat_in->setMaxQueueDepth(1000);
 
 	am_dataFloat_out->setNewConnectListener(&listener);
 	am_dataFloat_out->setNewDisconnectListener(&listener);
@@ -150,7 +150,7 @@ void AmFmPmBasebandDemod_i::squelchChanged(const double *oldValue, const double 
 int AmFmPmBasebandDemod_i::serviceFunction()
 {
 	LOG_TRACE(AmFmPmBasebandDemod_i, "serviceFunction()");
-	pkt = dataFloat_In->getPacket(0.0);
+	pkt = dataFloat_in->getPacket(0.0);
 	if (pkt==NULL)
 		return NOOP;
 

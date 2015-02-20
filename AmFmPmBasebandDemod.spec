@@ -29,7 +29,7 @@ Prefix:         %{_prefix}
 %define _infodir       %{_prefix}/info
 
 Name:           AmFmPmBasebandDemod
-Version:        1.0.1
+Version:        2.0.0
 Release:        1%{?dist}
 Summary:        Component %{name}
 
@@ -42,8 +42,8 @@ BuildRequires:  redhawk-devel >= 1.10
 Requires:       redhawk >= 1.10
 
 # Interface requirements
-BuildRequires:  bulkioInterfaces
-Requires:       bulkioInterfaces
+BuildRequires:  bulkioInterfaces >= 1.10
+Requires:       bulkioInterfaces >= 1.10
 
 # Softpkg requirements
 BuildRequires:  dsp-devel >= 1.0.0

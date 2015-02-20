@@ -46,7 +46,7 @@ class AmFmPmBasebandDemod_base : public Resource_impl, protected ThreadedCompone
         double phaseDeviation;
 
         // Ports
-        bulkio::InFloatPort *dataFloat_In;
+        bulkio::InFloatPort *dataFloat_in;
         bulkio::OutFloatPort *pm_dataFloat_out;
         bulkio::OutFloatPort *fm_dataFloat_out;
         bulkio::OutFloatPort *am_dataFloat_out;

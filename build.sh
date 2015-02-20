@@ -21,9 +21,9 @@ if [ "$1" = "rpm" ]; then
     if [ -e AmFmPmBasebandDemod.spec ]; then
         mydir=`dirname $0`
         tmpdir=`mktemp -d`
-        cp -r ${mydir} ${tmpdir}/AmFmPmBasebandDemod-1.0.1
-        tar czf ${tmpdir}/AmFmPmBasebandDemod-1.0.1.tar.gz --exclude=".svn" -C ${tmpdir} AmFmPmBasebandDemod-1.0.1
-        rpmbuild -ta ${tmpdir}/AmFmPmBasebandDemod-1.0.1.tar.gz
+        cp -r ${mydir} ${tmpdir}/AmFmPmBasebandDemod-2.0.0
+        tar czf ${tmpdir}/AmFmPmBasebandDemod-2.0.0.tar.gz --exclude=".svn" -C ${tmpdir} AmFmPmBasebandDemod-2.0.0
+        rpmbuild -ta ${tmpdir}/AmFmPmBasebandDemod-2.0.0.tar.gz
         rm -rf $tmpdir
     else
         echo "Missing RPM spec file in" `pwd`
@@ -35,7 +35,7 @@ else
         if [ -e build.sh ]; then
             ./build.sh $*
         elif [ -e reconf ]; then
-            ./reconf && ./configure && make
+            ./reconf && ./configure && make $*
         else
             echo "No build.sh found for $impl"
         fi
