@@ -1,4 +1,3 @@
-#!/bin/sh
 #
 # This file is protected by Copyright. Please refer to the COPYRIGHT file distributed with this 
 # source distribution.
@@ -28,7 +27,7 @@ Prefix:         %{_prefix}
 %define _mandir        %{_prefix}/man
 %define _infodir       %{_prefix}/info
 
-Name:           AmFmPmBasebandDemod
+Name:           rh.AmFmPmBasebandDemod
 Version:        2.0.0
 Release:        1%{?dist}
 Summary:        Component %{name}
@@ -63,7 +62,7 @@ Component %{name}
 # Implementation cpp
 pushd cpp
 ./reconf
-%define _bindir %{_prefix}/dom/components/AmFmPmBasebandDemod/cpp
+%define _bindir %{_prefix}/dom/components/rh/AmFmPmBasebandDemod/cpp
 %configure
 make %{?_smp_mflags}
 popd
@@ -73,7 +72,7 @@ popd
 rm -rf $RPM_BUILD_ROOT
 # Implementation cpp
 pushd cpp
-%define _bindir %{_prefix}/dom/components/AmFmPmBasebandDemod/cpp
+%define _bindir %{_prefix}/dom/components/rh/AmFmPmBasebandDemod/cpp
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
 
@@ -84,9 +83,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,redhawk,redhawk,-)
-%dir %{_prefix}/dom/components/%{name}
-%{_prefix}/dom/components/%{name}/AmFmPmBasebandDemod.scd.xml
-%{_prefix}/dom/components/%{name}/AmFmPmBasebandDemod.prf.xml
-%{_prefix}/dom/components/%{name}/AmFmPmBasebandDemod.spd.xml
-%{_prefix}/dom/components/%{name}/cpp
+%dir %{_prefix}/dom/components/rh/AmFmPmBasebandDemod
+%{_prefix}/dom/components/rh/AmFmPmBasebandDemod/AmFmPmBasebandDemod.scd.xml
+%{_prefix}/dom/components/rh/AmFmPmBasebandDemod/AmFmPmBasebandDemod.prf.xml
+%{_prefix}/dom/components/rh/AmFmPmBasebandDemod/AmFmPmBasebandDemod.spd.xml
+%{_prefix}/dom/components/rh/AmFmPmBasebandDemod/cpp
 

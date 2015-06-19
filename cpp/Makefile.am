@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License along with this 
 # program.  If not, see http://www.gnu.org/licenses/.
 #
-ossieName = AmFmPmBasebandDemod
-bindir = $(prefix)/dom/components/AmFmPmBasebandDemod/cpp/
+ossieName = rh.AmFmPmBasebandDemod
+bindir = $(prefix)/dom/components/rh/AmFmPmBasebandDemod/cpp/
 bin_PROGRAMS = AmFmPmBasebandDemod
 
-xmldir = $(prefix)/dom/components/AmFmPmBasebandDemod/
+xmldir = $(prefix)/dom/components/rh/AmFmPmBasebandDemod/
 dist_xml_DATA = ../AmFmPmBasebandDemod.scd.xml ../AmFmPmBasebandDemod.prf.xml ../AmFmPmBasebandDemod.spd.xml
 
 distclean-local:
