@@ -37,16 +37,17 @@ License:        LGPLv3+
 Source0:        %{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:  redhawk-devel >= 1.10
-Requires:       redhawk >= 1.10
+BuildRequires:  redhawk-devel >= 2.0
+Requires:       redhawk >= 2.0
+
+# Shared Library requirements
+BuildRequires:  rh.dsp-devel >= 2.0
+Requires:       rh.dsp >= 2.0
 
 # Interface requirements
-BuildRequires:  bulkioInterfaces >= 1.10
-Requires:       bulkioInterfaces >= 1.10
+BuildRequires:  bulkioInterfaces >= 2.0
+Requires:       bulkioInterfaces >= 2.0
 
-# Softpkg requirements
-BuildRequires:  dsp-devel >= 1.0.0
-Requires:       dsp >= 1.0.0
 
 %description
 Component %{name}

@@ -21,6 +21,8 @@ bin_PROGRAMS = AmFmPmBasebandDemod
 
 xmldir = $(prefix)/dom/components/rh/AmFmPmBasebandDemod/
 dist_xml_DATA = ../AmFmPmBasebandDemod.scd.xml ../AmFmPmBasebandDemod.prf.xml ../AmFmPmBasebandDemod.spd.xml
+ACLOCAL_AMFLAGS = -I$(OSSIEHOME)/share/aclocal/ossie
+
 
 distclean-local:
 	rm -f config.*
@@ -41,7 +43,7 @@ distclean-local:
 # you wish to manually control these options.
 include $(srcdir)/Makefile.am.ide
 AmFmPmBasebandDemod_SOURCES = $(redhawk_SOURCES_auto)
-AmFmPmBasebandDemod_LDADD = $(PROJECTDEPS_LIBS) $(BOOST_LDFLAGS) $(BOOST_THREAD_LIB) $(BOOST_REGEX_LIB) $(BOOST_SYSTEM_LIB) $(INTERFACEDEPS_LIBS) $(redhawk_LDADD_auto)
-AmFmPmBasebandDemod_CXXFLAGS = -Wall $(PROJECTDEPS_CFLAGS) $(BOOST_CPPFLAGS) $(INTERFACEDEPS_CFLAGS) $(redhawk_INCLUDES_auto)
+AmFmPmBasebandDemod_LDADD = $(SOFTPKG_LIBS) $(PROJECTDEPS_LIBS) $(BOOST_LDFLAGS) $(BOOST_THREAD_LIB) $(BOOST_REGEX_LIB) $(BOOST_SYSTEM_LIB) $(INTERFACEDEPS_LIBS) $(redhawk_LDADD_auto)
+AmFmPmBasebandDemod_CXXFLAGS = -Wall $(SOFTPKG_CFLAGS) $(PROJECTDEPS_CFLAGS) $(BOOST_CPPFLAGS) $(INTERFACEDEPS_CFLAGS) $(redhawk_INCLUDES_auto)
 AmFmPmBasebandDemod_LDFLAGS = -Wall $(redhawk_LDFLAGS_auto)
 

@@ -1,3 +1,4 @@
-bb82b0e5ec8fe8647d6cc286f23b1a8e  configure.ac
+abfb15557a4fe97690ef125154f1de1f  configure.ac
 eab40bcfd5139cfe18a8343ff44f1af8  Makefile.am
 b87651ea3565402473fb088004430fbf  build.sh
+c99df9fa4ab0cd042eac42fcee6441c3  reconf
