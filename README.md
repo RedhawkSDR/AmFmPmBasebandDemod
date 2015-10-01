@@ -1,8 +1,8 @@
-# REDHAWK Basic Components AmFmPmBasebandDemod
+# REDHAWK Basic Components rh.AmFmPmBasebandDemod
  
 ## Description
 
-Contains the source and build script for the REDHAWK Basic Components AmFmPmBasebandDemod component. This component performs angle demodulation on complex baseband input signals.
+Contains the source and build script for the REDHAWK Basic Components rh.AmFmPmBasebandDemod component. This component performs angle demodulation on complex baseband input signals.
  
 ## Installation Instructions
 This asset requires the rh.dsp shared library. This must be installed in order to build and run this asset.
@@ -14,4 +14,4 @@ This work is protected by Copyright. Please refer to the [Copyright File](COPYRI
 
 ## License
 
-REDHAWK Basic Components AmFmPmBasebandDemod is licensed under the GNU Lesser General Public License (LGPL).
+REDHAWK Basic Components rh.AmFmPmBasebandDemod is licensed under the GNU Lesser General Public License (LGPL).
