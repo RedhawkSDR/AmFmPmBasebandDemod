@@ -1,18 +1,12 @@
 variables:
-  test_suite: test_$CI_PROJECT_NAME.py
+  rh_20_release: '2.0.8'
+  rh_21_release: '2.1.3'
+  dsp_version: '2.0.0'
   namespace: rh.
-  rh_20_release: '2.0.7'
-  rh_21_release: '2.1.2'
+  test_suite: test_$CI_PROJECT_NAME.py
 
-.package: &package
-  image: ${docker_registry}utils/docker:latest-rpm
-  stage: build
-  tags:
-    - dind
-  script:
-    # Ensure newest version of FROM image
-    - docker pull ${docker_registry}rpmbuild:${dist}-${arch}-onbuild
-    # Use RPM release from specfile if this is a tag
+#Global before script, determine if this is a tag and handle rpm release field accordingly
+before_script:
     - safe_version=$(echo ${short_version} | tr -d -)
     - safe_ref=$(echo ${CI_COMMIT_REF_NAME} | tr -d /| tr '[:upper:]' '[:lower:]')
     - if [ -z "$CI_COMMIT_TAG" ]; then
@@ -21,35 +15,53 @@ variables:
         rpm_release="0.$CI_PIPELINE_ID.rh${safe_version}";
       else
         redhawk_version=${release_version}
-        dsp_version=2.0.0
-        rpm_release="`rpm --query --queryformat "%{release}\n" --specfile ${namespace}$CI_PROJECT_NAME.spec | awk -F"." "{print $1}"`.rh${safe_version}";
+        rpm_release="`rpm --query --queryformat "%{release}\n" --specfile ${namespace}$CI_PROJECT_NAME.spec | head -n 1 | awk -F"." "{print $1}"`.rh${safe_version}";
       fi
     - redhawk_repo=$yum_repo_url/redhawk-core-framework/$redhawk_version/$dist/$arch
     - dsp_repo=$yum_repo_url/redhawk-sharedlibs/dsp/$dsp_version/rh${safe_version}/$dist/$arch
-    - fftlib_repo=$yum_repo_url/redhawk-sharedlibs/fftlib/$fftlib_version/rh${safe_version}/$dist/$arch
-    - docker pull ${docker_registry}rpmbuild:$dist-$arch-onbuild
-    - printf "FROM ${docker_registry}rpmbuild:$dist-$arch-onbuild" > Dockerfile
-    - name=$(echo $CI_PROJECT_NAME| tr '[:upper:]' '[:lower:]')
-    - docker build -t $name:$safe_ref-$dist-$arch-rh${safe_version} --build-arg "project=$CI_PROJECT_NAME"
-                                               --build-arg "rpm_release=$rpm_release"
-                                               --build-arg "spec_file=${namespace}$CI_PROJECT_NAME.spec"
-                                               --build-arg "arch=$arch"
-                                               --build-arg "other_repos=$redhawk_repo $dsp_repo" .
-    - id=$(docker create $name:$safe_ref-$dist-$arch-rh${safe_version})
-    - docker cp $id:/root/rpmbuild/RPMS/ output/
-    - docker rm -f $id || true
+
+.package: &package
+  image: ${docker_registry}${docker_rpm_repository}docker:latest-rpm
+  stage: build
+  tags:
+    - ca
+    - docker
+  script:
+    - printf "FROM ${docker_registry}${rpmbuild_repository}rpmbuild:$dist-$arch-onbuild" > Dockerfile
+    - docker login ${docker_registry} -u ${docker_user} -p ${docker_password}
+    - docker image build --pull
+                         --tag=$CI_PROJECT_PATH_SLUG-$safe_ref-$dist-$arch-rh${safe_version}
+                         --build-arg "project=$CI_PROJECT_NAME"
+                         --build-arg "rpm_release=$rpm_release"
+                         --build-arg "spec_file=${namespace}$CI_PROJECT_NAME.spec"
+                         --build-arg "arch=$arch"
+                         --build-arg "other_repos=$redhawk_repo $dsp_repo" .
+    - id=$(docker container create $CI_PROJECT_PATH_SLUG-$safe_ref-$dist-$arch-rh${safe_version})
+    - docker container cp $id:/root/rpmbuild/RPMS/ output/
+    - docker container rm -f $id || true
+    - docker image rm -f $CI_PROJECT_PATH_SLUG-$safe_ref-$dist-$arch-rh${safe_version} || true
   artifacts:
     paths:
       - output/*/*.rpm
     expire_in: 2 days
+  except:
+    - master
+    - /^.*-external$/
+    - /^(\d+\.)?(\d+)?(\.\d+)$/
 
 .test: &test
-  image: ${docker_registry}redhawk/redhawk:$redhawk_version-$dist-$arch
+  image: ${docker_registry}redhawk/buildenv:${short_version}-$dist-$arch
   stage: test
   dependencies: []
+  tags:
+    - ca
   script:
     - . /usr/local/redhawk/python-virtualenv/bin/activate
-    - yum-builddep -y ${namespace}$CI_PROJECT_NAME.spec
+    - yum-config-manager --add-repo $redhawk_repo
+    - yum-config-manager --add-repo $dsp_repo
+    - touch /var/lib/rpm/* && yum-builddep --nogpgcheck -y ${namespace}$CI_PROJECT_NAME.spec
+    - source /etc/profile.d/redhawk.sh
+    - export SDRROOT=/var/redhawk/sdr
     - if [ -d cpp ] && [ "${dist}" == "el7" ]; then
         export CXXFLAGS='-g -Og -fprofile-arcs -ftest-coverage' V=1;
       fi
@@ -68,6 +80,10 @@ variables:
     paths:
       - $CI_PROJECT_DIR/output.tar.gz
     expire_in: 2 days
+  except:
+    - master
+    - /^.*-external$/
+    - /^(\d+\.)?(\d+)?(\.\d+)$/
 
 package:el6:rh2.0:
   variables:
@@ -125,7 +141,9 @@ package:el7:rh2.1:
 
 test:el6:rh2.0:
   variables:
-    redhawk_version: 2.0-nightly
+    latest_version: 2.0-nightly
+    release_version: $rh_20_release
+    short_version: '2.0'
     dist: el6
     arch: x86_64
   <<: *test
@@ -134,122 +152,60 @@ test:el6:rh2.0:
 
 test:el6-i386:rh2.0:
   variables:
-    redhawk_version: 2.0-nightly
+    latest_version: 2.0-nightly
+    release_version: $rh_20_release
+    short_version: '2.0'
     dist: el6
     arch: i686
   <<: *test
-  only:
-    - branches
 
 test:el7:rh2.0:
   variables:
-    redhawk_version: 2.0-nightly
+    latest_version: 2.0-nightly
+    release_version: $rh_20_release
+    short_version: '2.0'
     dist: el7
     arch: x86_64
   <<: *test
-  only:
-    - branches
 
 test:el6:rh2.1:
   variables:
-    redhawk_version: 2.1-nightly
+    latest_version: 2.1-nightly
+    release_version: $rh_21_release
+    short_version: '2.1'
     dist: el6
     arch: x86_64
   <<: *test
-  only:
-    - branches
 
 test:el6-i386:rh2.1:
   variables:
-    redhawk_version: 2.1-nightly
+    latest_version: 2.1-nightly
+    release_version: $rh_21_release
+    short_version: '2.1'
     dist: el6
     arch: i686
   <<: *test
-  only:
-    - branches
 
 test:el7:rh2.1:
   variables:
-    redhawk_version: 2.1-nightly
+    latest_version: 2.1-nightly
+    release_version: $rh_21_release
+    short_version: '2.1'
     dist: el7
     arch: x86_64
   <<: *test
-  only:
-    - branches
-
-test:release:el6:rh2.0:
-  variables:
-    redhawk_version: $rh_20_release
-    dist: el6
-    arch: x86_64
-  <<: *test
-  only:
-    - tags
-
-test:release:el6-i386:rh2.0:
-  variables:
-    redhawk_version: $rh_20_release
-    dist: el6
-    arch: i686
-  <<: *test
-  only:
-    - tags
-
-test:release:el7:rh2.0:
-  variables:
-    redhawk_version: $rh_20_release
-    dist: el7
-    arch: x86_64
-  <<: *test
-  only:
-    - tags
-
-test:release:el6:rh2.1:
-  variables:
-    redhawk_version: $rh_21_release
-    dist: el6
-    arch: x86_64
-  <<: *test
-  only:
-    - tags
-
-test:release:el6-i386:rh2.1:
-  variables:
-    redhawk_version: $rh_21_release
-    dist: el6
-    arch: i686
-  <<: *test
-  only:
-    - tags
-
-test:release:el7:rh2.1:
-  variables:
-    redhawk_version: $rh_21_release
-    dist: el7
-    arch: x86_64
-  <<: *test
-  only:
-    - tags
 
 deploy:
-  image: centos:7
+  image: ${docker_registry}centos:7
   stage: deploy
   dependencies: []
+  before_script:
+    - echo "Deploying to $jenkins_url/job/$CI_PROJECT_NAMESPACE/job/$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME"
   script:
     - if [ -n "$jenkins_url" ]; then
         curl --insecure -X POST $jenkins_url/job/$CI_PROJECT_NAMESPACE/job/$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME/buildWithParameters?pipeline_id=$CI_PIPELINE_ID --user $jenkins_user:$jenkins_api_token;
       fi
-  only:
-    - branches
-
-deploy:release:
-  image: centos:7
-  stage: deploy
-  dependencies: []
-  #Note, must set set associated redhawk_release
-  script:
-    - if [ -n "$jenkins_url" ]; then
-        curl --insecure -X POST $jenkins_url/job/$rh_21_release/job/$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME/buildWithParameters?pipeline_id=$CI_PIPELINE_ID --user $jenkins_user:$jenkins_api_token;
-      fi
-  only:
-    - tags
+  except:
+    - master
+    - /^.*-external$/
+    - /^(\d+\.)?(\d+)?(\.\d+)$/
